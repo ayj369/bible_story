@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#fdfbf7">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="말씀의 숲">
+  <title>말씀의 숲 — 초신자를 위한 성경 스토리 오디오북</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #fdfbf7;
+      --bg-card: #ffffff;
+      --bg-sub: #f4efe6;
+      --text-main: #292524;
+      --text-sub: #78716c;
+      --accent: #b45309;
+      --accent-soft: #fef3c7;
+      --border: #e7e5e4;
+      --highlight-bg: #fef08a;
+    }
+
+    [data-theme="sepia"] {
+      --bg-main: #f3ead8;
+      --bg-card: #fbf5e8;
+      --bg-sub: #e8dcc4;
+      --text-main: #3e2723;
+      --text-sub: #6d4c41;
+      --accent: #8d4004;
+      --accent-soft: #f5deb3;
+      --border: #d7c7aa;
+      --highlight-bg: #fde047;
+    }
+
+    [data-theme="dark"] {
+      --bg-main: #121316;
+      --bg-card: #1c1e24;
+      --bg-sub: #252830;
+      --text-main: #f3f4f6;
+      --text-sub: #9ca3af;
+      --accent: #f59e0b;
+      --accent-soft: rgba(245, 158, 11, 0.16);
+      --border: #2e323d;
+      --highlight-bg: rgba(245, 158, 11, 0.28);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      transition: background-color 0.25s ease, color 0.25s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .serif-story {
+      font-family: 'Noto Serif KR', Georgia, serif;
+      line-height: 2.0;
+      word-break: keep-all;
+    }
+
+    .sentence-span {
+      transition: background-color 0.25s ease, color 0.25s ease;
+      border-radius: 6px;
+      padding: 2px 4px;
+      cursor: pointer;
+    }
+
+    .sentence-span:hover {
+      background-color: var(--accent-soft);
+    }
+
+    .sentence-active {
+      background-color: var(--highlight-bg);
+      font-weight: 600;
+    }
+
+    @keyframes pulseWave {
+      0%, 100% { transform: scaleY(0.35); }
+      50% { transform: scaleY(1); }
+    }
+    .wave-bar {
+      animation: pulseWave 0.9s ease-in-out infinite;
+    }
+    .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-32">
+
+  <!-- Top App Bar -->
+  <header class="sticky top-0 z-30 border-b backdrop-blur-md px-4 py-3 flex items-center justify-between"
+          style="background-color: color-mix(in srgb, var(--bg-main) 88%, transparent); border-color: var(--border);">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-2xl flex items-center justify-center text-white font-bold shadow-sm"
+           style="background-color: var(--accent);">
+        🌿
+      </div>
+      <div>
+        <h1 class="text-base font-bold leading-tight tracking-tight">말씀의 숲</h1>
+        <p class="text-[11px]" style="color: var(--text-sub);">초신자를 위한 1,200편 장편 성경 오디오북</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <button id="btnOpenTimer" class="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition active:scale-95"
+              style="background-color: var(--bg-card); border-color: var(--border);">
+        <span>⏰</span>
+        <span id="timerBadgeText">취침예약</span>
+      </button>
+
+      <button id="btnThemeCycle" title="화면 테마 변경" class="p-2 rounded-xl border text-xs font-semibold transition active:scale-95"
+              style="background-color: var(--bg-card); border-color: var(--border);">
+        🌗
+      </button>
+
+      <button id="btnOpenInstall" class="px-2.5 py-1.5 rounded-xl text-xs font-bold text-white shadow-sm transition active:scale-95"
+              style="background-color: var(--accent);">
+        📲 앱 설치
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 w-full max-w-2xl mx-auto px-4 pt-4 space-y-5">
+
+    <!-- Voice & Reader Controls Card -->
+    <section class="rounded-2xl p-3.5 border shadow-sm space-y-3"
+             style="background-color: var(--bg-card); border-color: var(--border);">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-1 p-1 rounded-xl border" style="background-color: var(--bg-sub); border-color: var(--border);">
+          <button id="btnVoiceFemale" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">
+            👩 여성 성우
+          </button>
+          <button id="btnVoiceMale" class="px-3 py-1.5 rounded-lg text-xs font-bold transition">
+            👨 남성 성우
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button id="btnSpeedCycle" class="px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition"
+                  style="background-color: var(--bg-sub); border-color: var(--border);">
+            1.0x
+          </button>
+          <button id="btnTestVoice" class="px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition"
+                  style="background-color: var(--accent-soft); border-color: var(--border); color: var(--accent);">
+            🔊 음성 테스트
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] pt-2 border-t" style="border-color: var(--border); color: var(--text-sub);">
+        <div class="flex items-center gap-1.5 min-w-0 flex-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+          <select id="voiceSelectDropdown" title="기기 내장 성우 음성 선택" class="bg-transparent font-semibold truncate max-w-[230px] outline-none cursor-pointer" style="color: var(--text-main);">
+            <option value="">성우 음성 불러오는 중...</option>
+          </select>
+        </div>
+        <span class="font-semibold shrink-0" style="color: var(--accent);">
+          ⚡ 기기 내장 성우 · 즉시 재생
+        </span>
+      </div>
+    </section>
+
+    <!-- Active Story Reader Card -->
+    <article class="rounded-3xl p-5 sm:p-7 border shadow-sm space-y-4"
+             style="background-color: var(--bg-card); border-color: var(--border);">
+      <div class="flex items-center justify-between gap-2">
+        <span id="storyCategoryBadge" class="px-2.5 py-1 rounded-full text-[11px] font-bold"
+              style="background-color: var(--accent-soft); color: var(--accent);">
+          구약 · 창세기
+        </span>
+        <div class="flex items-center gap-1.5">
+          <button id="btnFontSmaller" class="w-7 h-7 rounded-lg border text-xs font-bold flex items-center justify-center"
+                  style="background-color: var(--bg-sub); border-color: var(--border);">가-</button>
+          <button id="btnFontLarger" class="w-7 h-7 rounded-lg border text-xs font-bold flex items-center justify-center"
+                  style="background-color: var(--bg-sub); border-color: var(--border);">가+</button>
+        </div>
+      </div>
+
+      <div>
+        <h2 id="storyTitle" class="text-xl sm:text-2xl font-bold tracking-tight leading-snug">
+          1. 여섯 날의 창조와 일곱째 날의 쉼
+        </h2>
+        <p id="storyReference" class="text-xs mt-1 font-medium" style="color: var(--text-sub);">
+          성경 본문: 창세기 1장 1절 ~ 2장 3절
+        </p>
+      </div>
+
+      <div class="p-3.5 rounded-2xl text-xs leading-relaxed border"
+           style="background-color: var(--bg-sub); border-color: var(--border);">
+        <span class="font-bold block mb-1" style="color: var(--accent);">💡 초신자를 위한 한 줄 핵심</span>
+        <span id="storySummary">하나님은 우연이 아니라 따뜻한 사랑과 정교한 순서 속에서 이 세상과 우리 한 사람 한 사람을 걸작품으로 만드셨습니다.</span>
+      </div>
+
+      <div id="storyContent" class="serif-story text-[16.5px] space-y-4 pt-1"></div>
+    </article>
+
+    <!-- Story Library Section (1,200 Stories with Category & Book Filters) -->
+    <section class="space-y-3 pt-1">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h3 class="text-sm font-bold flex items-center gap-1.5">
+          <span>📚 성경 스토리 목록</span>
+          <span id="filteredCountBadge" class="text-[11px] font-normal px-2 py-0.5 rounded-full" style="background-color: var(--bg-sub); color: var(--text-sub);">1,200편</span>
+        </h3>
+        <div class="flex items-center gap-1 p-1 rounded-xl border text-xs"
+             style="background-color: var(--bg-card); border-color: var(--border);">
+          <button class="filter-tab px-2.5 py-1 rounded-lg font-bold" data-filter="all">전체 (1,200)</button>
+          <button class="filter-tab px-2.5 py-1 rounded-lg font-medium" data-filter="old">구약 (600)</button>
+          <button class="filter-tab px-2.5 py-1 rounded-lg font-medium" data-filter="new">신약 (600)</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <select id="bookCategorySelect" class="w-full px-3 py-2.5 rounded-xl border text-xs font-semibold outline-none cursor-pointer"
+                style="background-color: var(--bg-card); border-color: var(--border); color: var(--text-main);">
+          <option value="ALL">📖 전체 성경 66권 보기</option>
+        </select>
+        <div class="relative">
+          <input type="text" id="storySearchInput" placeholder="스토리 제목, 인물(노아, 다윗, 베드로) 검색..."
+                 class="w-full px-3 py-2.5 rounded-xl border text-xs outline-none"
+                 style="background-color: var(--bg-card); border-color: var(--border); color: var(--text-main);">
+        </div>
+      </div>
+
+      <div id="storyListGrid" class="grid grid-cols-1 gap-2.5 max-h-[420px] overflow-y-auto pr-1"></div>
+    </section>
+  </main>
+
+  <!-- Sticky Bottom Audio Player Bar -->
+  <footer class="fixed bottom-0 inset-x-0 z-40 border-t backdrop-blur-lg px-4 py-3"
+          style="background-color: color-mix(in srgb, var(--bg-card) 94%, transparent); border-color: var(--border);">
+    <div class="max-w-2xl mx-auto space-y-2.5">
+      <div class="flex items-center gap-2.5 text-[11px] font-medium" style="color: var(--text-sub);">
+        <span id="progressLabel">0 / 0 문장</span>
+        <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background-color: var(--bg-sub);">
+          <div id="progressBarFill" class="h-full transition-all duration-300 rounded-full"
+               style="width: 0%; background-color: var(--accent);"></div>
+        </div>
+        <label class="flex items-center gap-1 cursor-pointer select-none">
+          <input type="checkbox" id="chkAutoNext" checked class="accent-amber-600 rounded">
+          <span>연속 듣기</span>
+        </label>
+      </div>
+
+      <div class="flex items-center justify-between gap-3">
+        <button id="btnPrevStory" class="px-3 py-2 rounded-xl border text-xs font-semibold transition active:scale-95"
+                style="background-color: var(--bg-sub); border-color: var(--border);">
+          ⏮ 이전 편
+        </button>
+
+        <button id="btnPlayPauseMain" class="flex-1 py-2.5 px-4 rounded-2xl text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition active:scale-98"
+                style="background-color: var(--accent);">
+          <span id="playBtnIcon">▶️</span>
+          <span id="playBtnLabel">스토리 듣기</span>
+          <span id="playingWave" class="hidden items-end gap-0.5 h-3.5 ml-1">
+            <span class="w-0.5 h-full bg-white rounded-full wave-bar"></span>
+            <span class="w-0.5 h-full bg-white rounded-full wave-bar"></span>
+            <span class="w-0.5 h-full bg-white rounded-full wave-bar"></span>
+            <span class="w-0.5 h-full bg-white rounded-full wave-bar"></span>
+          </span>
+        </button>
+
+        <button id="btnNextStory" class="px-3 py-2 rounded-xl border text-xs font-semibold transition active:scale-95"
+                style="background-color: var(--bg-sub); border-color: var(--border);">
+          다음 편 ⏭
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Sleep Timer Modal -->
+  <div id="sleepModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+    <div class="w-full max-w-md rounded-3xl p-5 border shadow-xl space-y-4"
+         style="background-color: var(--bg-card); border-color: var(--border);">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold">⏰ 자동 종료 (취침 예약)</h3>
+        <button id="btnCloseSleepModal" class="p-1.5 rounded-lg text-sm" style="color: var(--text-sub);">✕</button>
+      </div>
+      <p class="text-xs" style="color: var(--text-sub);">
+        주무시기 전에 틀어두셔도 설정한 시간이 지나면 낭독이 자동으로 멈춥니다.
+      </p>
+
+      <div class="grid grid-cols-3 gap-2">
+        <button class="preset-timer py-2.5 rounded-xl border text-xs font-bold transition" data-mins="15"
+                style="background-color: var(--bg-sub); border-color: var(--border);">15분 뒤</button>
+        <button class="preset-timer py-2.5 rounded-xl border text-xs font-bold transition" data-mins="30"
+                style="background-color: var(--bg-sub); border-color: var(--border);">30분 뒤</button>
+        <button class="preset-timer py-2.5 rounded-xl border text-xs font-bold transition" data-mins="60"
+                style="background-color: var(--bg-sub); border-color: var(--border);">1시간 뒤</button>
+        <button class="preset-timer py-2.5 rounded-xl border text-xs font-bold transition" data-mins="120"
+                style="background-color: var(--bg-sub); border-color: var(--border);">2시간 뒤</button>
+        <button class="preset-timer py-2.5 rounded-xl border text-xs font-bold transition" data-mins="180"
+                style="background-color: var(--bg-sub); border-color: var(--border);">3시간 뒤</button>
+        <button id="btnCancelTimer" class="py-2.5 rounded-xl border text-xs font-bold text-red-500 transition"
+                style="background-color: var(--bg-sub); border-color: var(--border);">타이머 해제</button>
+      </div>
+
+      <div class="pt-2 border-t flex items-center gap-2" style="border-color: var(--border);">
+        <input type="number" id="customHoursInput" min="0" max="12" value="1"
+               class="w-16 px-2.5 py-2 rounded-xl border text-center text-sm font-bold"
+               style="background-color: var(--bg-sub); border-color: var(--border);">
+        <span class="text-xs font-semibold">시간</span>
+        <input type="number" id="customMinsInput" min="0" max="59" value="0"
+               class="w-16 px-2.5 py-2 rounded-xl border text-center text-sm font-bold"
+               style="background-color: var(--bg-sub); border-color: var(--border);">
+        <span class="text-xs font-semibold">분 뒤</span>
+        <button id="btnApplyCustomTimer" class="flex-1 py-2 rounded-xl text-white text-xs font-bold"
+                style="background-color: var(--accent);">적용하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile App Install Guide Modal -->
+  <div id="installModal" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+    <div class="w-full max-w-md rounded-3xl p-5 border shadow-xl space-y-4"
+         style="background-color: var(--bg-card); border-color: var(--border);">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold">📲 스마트폰 홈 화면에 앱 설치하기</h3>
+        <button id="btnCloseInstallModal" class="p-1.5 rounded-lg text-sm" style="color: var(--text-sub);">✕</button>
+      </div>
+      <div class="space-y-3 text-xs leading-relaxed" style="color: var(--text-sub);">
+        <div class="p-3 rounded-2xl border space-y-1" style="background-color: var(--bg-sub); border-color: var(--border);">
+          <p class="font-bold" style="color: var(--text-main);">🍎 아이폰 (Safari 브라우저)</p>
+          <p>1. 현재 페이지를 사파리(Safari) 브라우저로 엽니다.</p>
+          <p>2. 화면 하단 가운데 <strong>공유 버튼(네모 위 화살표 ⬆️)</strong>을 누릅니다.</p>
+          <p>3. 아래로 내려 <strong>[홈 화면에 추가]</strong>를 누르면 앱 아이콘이 생성됩니다.</p>
+        </div>
+        <div class="p-3 rounded-2xl border space-y-1" style="background-color: var(--bg-sub); border-color: var(--border);">
+          <p class="font-bold" style="color: var(--text-main);">🤖 갤럭시 / 안드로이드 (Chrome 브라우저)</p>
+          <p>1. 크롬(Chrome) 브라우저 우측 상단 <strong>점 세 개 메뉴(⋮)</strong>를 누릅니다.</p>
+          <p>2. <strong>[홈 화면에 추가]</strong> 또는 <strong>[앱 설치]</strong>를 선택합니다.</p>
+          <p>3. 별도 스토어 다운로드 없이 독립 실행형 앱처럼 바로 사용 가능합니다.</p>
+        </div>
+      </div>
+      <button id="btnConfirmInstallModal" class="w-full py-2.5 rounded-xl text-white text-xs font-bold"
+              style="background-color: var(--accent);">확인했습니다</button>
+    </div>
+  </div>
+
+  <!-- Toast Banner -->
+  <div id="toastBox" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full text-xs font-semibold text-white shadow-lg opacity-0 pointer-events-none transition-opacity duration-300"
+       style="background-color: #1c1917;">
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. Bible 66 Books Catalog & 1,200 Rich Long-Form Stories Data
+    // =========================================================================
+    const BIBLE_BOOKS_CATALOG = [
+      // 구약 39권 (총 600편)
+      { t: 'old', b: '창세기', cnt: 35, theme: '세상의 시작과 믿음의 조상들', hero: '아담, 노아, 아브라함, 이삭, 야곱, 요셉', place: '에덴동산, 아라랏산, 가나안, 애굽', lesson: '하나님은 모든 것을 선하게 시작하시고 끝까지 신실하게 책임지십니다.' },
+      { t: 'old', b: '출애굽기', cnt: 30, theme: '노예에서 자유인으로 구원하심', hero: '모세, 아론, 미리암과 이스라엘 백성', place: '이집트 고센 땅, 홍해 바다, 시내산', lesson: '인생의 홍해 앞에서도 하나님이 마른 땅의 길을 열어주십니다.' },
+      { t: 'old', b: '레위기', cnt: 18, theme: '거룩한 하나님께 나아가는 제사와 절기', hero: '대제사장 아론과 레위 자손들', place: '광야의 성막과 지성소', lesson: '하나님은 우리가 정결하고 이웃을 사랑하는 따뜻한 마음으로 살기를 원하십니다.' },
+      { t: 'old', b: '민수기', cnt: 24, theme: '광야 40년 동안 동행하신 구름기둥과 불기둥', hero: '모세, 여호수아, 갈렙', place: '시내 광야, 가데스 바네아, 모압 평지', lesson: '광야 같은 인생길에서도 하나님은 매일 하늘의 만나와 반석의 물을 주십니다.' },
+      { t: 'old', b: '신명기', cnt: 22, theme: '약속의 땅을 앞둔 모세의 마지막 사랑의 당부', hero: '지도자 모세와 새 세대 이스라엘', place: '요단강 건너편 모압 평지와 느보산', lesson: '마음을 다하고 뜻을 다해 하나님을 사랑하고 약자를 돌보는 것이 행복의 길입니다.' },
+      { t: 'old', b: '여호수아', cnt: 20, theme: '믿음으로 건넌 요단강과 약속의 땅 가나안', hero: '여호수아, 갈렙, 기생 라합', place: '요단강, 여리고성, 실로', lesson: '두려워하지 말고 담대히 발을 내디딜 때 하나님의 약속이 눈앞의 현실이 됩니다.' },
+      { t: 'old', b: '사사기', cnt: 18, theme: '넘어져도 부르짖으면 다시 일으켜 세우시는 은혜', hero: '드보라, 기드온, 입다, 삼손', place: '가나안 여러 지파의 성읍들', lesson: '우리가 연약하여 넘어질 때에도 하나님은 구원자를 보내 새 희망을 주십니다.' },
+      { t: 'old', b: '룻기', cnt: 8, theme: '국경을 넘어선 며느리의 따뜻한 효심과 사랑', hero: '모압 여인 룻, 시어머니 나오미, 보아스', place: '베들레헴의 보리밭', lesson: '작은 친절과 끝까지 함께하는 사랑이 다윗 왕가의 위대한 축복이 됩니다.' },
+      { t: 'old', b: '사무엘상', cnt: 24, theme: '외모가 아닌 마음의 중심을 보시는 하나님', hero: '한나, 사무엘, 사울, 다윗, 요나단', place: '실로, 엘라 골짜기, 엔게디 광야', lesson: '세상이 작다고 여기는 사람도 하나님 손에 들리면 거인 골리앗을 이깁니다.' },
+      { t: 'old', b: '사무엘하', cnt: 20, theme: '실수마저 회개할 때 품으시는 다윗 왕의 이야기', hero: '다윗 왕, 선지자 나단, 므비보셋', place: '예루살렘 시온산', lesson: '진심으로 뉘우치고 돌아서는 상한 마음을 하나님은 결코 외면하지 않으십니다.' },
+      { t: 'old', b: '열왕기상', cnt: 18, theme: '지혜의 왕 솔로몬과 갈멜산의 불을 내린 엘리야', hero: '솔로몬 왕, 선지자 엘리야, 사르밧 과부', place: '예루살렘 성전, 갈멜산, 호렙산', lesson: '세상의 어떤 보물보다 하나님을 경외하며 듣는 지혜가 가장 귀합니다.' },
+      { t: 'old', b: '열왕기하', cnt: 18, theme: '기적의 치유와 눈물의 기도를 들으신 하나님', hero: '엘리사, 나아만 장군, 히스기야 왕, 요시야', place: '요단강, 사마리아, 예루살렘', lesson: '간절한 눈물의 기도 한마디가 닫힌 하늘을 열고 생명을 연장시킵니다.' },
+      { t: 'old', b: '역대상', cnt: 14, theme: '언약궤를 모시며 찬양을 준비한 다윗의 마음', hero: '다윗 왕과 레위인 찬양대', place: '예루살렘 다윗성', lesson: '감사함으로 드리는 예배와 찬양이 우리 삶의 중심을 반석 위에 세웁니다.' },
+      { t: 'old', b: '역대하', cnt: 16, theme: '찬양과 기도로 나라를 지킨 믿음의 왕들', hero: '솔로몬, 아사, 여호사밧, 히스기야', place: '예루살렘 성전과 드고아 들판', lesson: '큰 위기 앞에서 하나님만 바라보며 찬양할 때 놀라운 승리가 찾아옵니다.' },
+      { t: 'old', b: '에스라', cnt: 10, theme: '70년 포로 생활을 마치고 무너진 성전을 세운 기쁨', hero: '총독 스룹바벨과 학사 에스라', place: '바벨론에서 돌아온 예루살렘', lesson: '모든 것이 무너진 자리에서도 하나님의 말씀으로 다시 아름답게 시작할 수 있습니다.' },
+      { t: 'old', b: '느헤미야', cnt: 12, theme: '눈물의 기도로 52일 만에 완공한 예루살렘 성벽', hero: '술 맡은 관원 느헤미야와 백성들', place: '수산궁과 예루살렘 성벽', lesson: '한 손에는 연장, 한 손에는 기도를 들고 함께할 때 불가능해 보이는 일도 완성됩니다.' },
+      { t: 'old', b: '에스더', cnt: 10, theme: '이때를 위함이 아닌지 누가 알겠느냐', hero: '왕비 에스더와 모르드개', place: '페르시아 제국의 수산궁', lesson: '하나님의 이름이 직접 드러나지 않는 순간에도 주님은 우리를 지키려 일하십니다.' },
+      { t: 'old', b: '욥기', cnt: 22, theme: '깊은 고난의 밤을 지나 만난 더 크신 하나님', hero: '우스 땅의 의인 욥과 세 친구', place: '우스 땅의 잿더미와 폭풍우 속', lesson: '이유를 알 수 없는 아픔 속에서도 하나님은 여전히 내 손을 놓지 않으십니다.' },
+      { t: 'old', b: '시편', cnt: 45, theme: '여호와는 나의 목자시니 내게 부족함이 없으리로다', hero: '목자 다윗과 시편의 노래꾼들', place: '푸른 풀밭과 쉴 만한 물가, 밤하늘 아래', lesson: '기쁠 때도 눈물 날 때도 꾸밈없는 모습 그대로 하나님께 마음을 노래하세요.' },
+      { t: 'old', b: '잠언', cnt: 24, theme: '매일의 삶을 지혜롭고 따뜻하게 비추는 보석함', hero: '지혜의 왕 솔로몬', place: '가정과 일터, 삶의 길목', lesson: '지혜의 시작은 하나님을 존중하고 이웃에게 온유한 말을 건네는 것입니다.' },
+      { t: 'old', b: '전도서', cnt: 10, theme: '헛됨을 넘어 발견하는 오늘 하루의 소중한 선물', hero: '전도자 솔로몬', place: '해 아래 모든 인생의 계절 속', lesson: '지금 내 곁에서 함께 웃는 가족과 오늘 주어진 일상이 하나님의 가장 큰 선물입니다.' },
+      { t: 'old', b: '아가', cnt: 8, theme: '우리를 세상에서 가장 귀히 여기시는 사랑의 노래', hero: '신랑과 술람미 신부', place: '꽃피는 봄날의 포도원과 동산', lesson: '하나님은 우리를 흠 없는 보석처럼 바라보시며 변치 않는 사랑으로 품으십니다.' },
+      { t: 'old', b: '이사야', cnt: 30, theme: '어둠 속에 오실 평화의 왕과 위로의 예언', hero: '선지자 이사야', place: '예루살렘 성전과 광야의 대로', lesson: '밤이 깊을수록 우리를 치유하고 구원하실 새벽빛이 가까이 다가옵니다.' },
+      { t: 'old', b: '예레미야', cnt: 22, theme: '눈물의 선지자가 전한 새 언약과 미래의 소망', hero: '선지자 예레미야와 서기관 바룩', place: '예루살렘과 토기장이의 집', lesson: '하나님이 우리를 향해 품으신 생각은 재앙이 아니라 평안과 희망을 주는 것입니다.' },
+      { t: 'old', b: '예레미야애가', cnt: 6, theme: '아침마다 새롭게 솟아나는 하나님의 성실하심', hero: '예레미야', place: '폐허가 된 예루살렘 성문 앞', lesson: '깊은 슬픔의 끝자락에서도 주의 자비와 긍휼은 매일 아침 새롭게 시작됩니다.' },
+      { t: 'old', b: '에스겔', cnt: 18, theme: '마른 뼈들이 다시 살아나는 성령의 생기', hero: '제사장 에스겔', place: '바벨론 그발 강가와 마른 뼈 골짜기', lesson: '식어버린 마음에도 하나님의 생기가 불어오면 다시 살아나 큰 군대가 됩니다.' },
+      { t: 'old', b: '다니엘', cnt: 14, theme: '풀무불과 사자 굴 속에서도 흔들리지 않은 믿음', hero: '다니엘, 사드락, 메삭, 아벳느고', place: '바벨론 왕궁과 사자 굴', lesson: '세상과 타협하지 않는 하루 세 번의 기도가 하늘 천사를 움직입니다.' },
+      { t: 'old', b: '호세아', cnt: 10, theme: '끝까지 포기하지 않으시는 첫사랑의 하나님', hero: '선지자 호세아', place: '북이스라엘의 들판', lesson: '우리가 길을 잃고 멀어져도 하나님은 언제나 두 팔 벌려 돌아오기를 기다리십니다.' },
+      { t: 'old', b: '요엘', cnt: 5, theme: '모든 자녀에게 부어주시는 성령의 단비 약속', hero: '선지자 요엘', place: '시온산', lesson: '누구든지 진심으로 주의 이름을 부르는 사람은 구원과 새 힘을 얻습니다.' },
+      { t: 'old', b: '아모스', cnt: 8, theme: '정의를 물 같이 공의를 마르지 않는 강 같이', hero: '드고아의 목자 아모스', place: '벧엘과 사마리아', lesson: '하나님은 화려한 형식보다 가난한 이웃을 돌보는 진실한 사랑을 기뻐하십니다.' },
+      { t: 'old', b: '오바댜', cnt: 4, theme: '교만을 낮추시고 형제의 아픔을 품으시는 하나님', hero: '선지자 오바댜', place: '에돔의 바위산', lesson: '어려움에 처한 형제를 외면하지 않고 함께 울어주는 따뜻한 마음이 귀합니다.' },
+      { t: 'old', b: '요나', cnt: 8, theme: '큰 물고기 뱃속에서 배운 하나님의 넓으신 사랑', hero: '선지자 요나와 니느웨 백성들', place: '다시스로 가는 배, 깊은 바다, 니느웨 성', lesson: '하나님은 내가 미워하는 사람까지도 끝까지 사랑하고 용서하길 원하시는 분입니다.' },
+      { t: 'old', b: '미가', cnt: 7, theme: '공의를 행하며 인자를 사랑하고 겸손히 동행함', hero: '모레셋 사람 미가', place: '유다와 작은 마을 베들레헴', lesson: '작고 보잘것없어 보이는 베들레헴에서 온 세상을 구할 평화의 목자가 태어납니다.' },
+      { t: 'old', b: '나훔', cnt: 4, theme: '환난 날에 든든한 산성이 되어주시는 하나님', hero: '선지자 나훔', place: '유다 산지', lesson: '하나님은 주님께 피하는 모든 영혼을 세세히 아시고 안전하게 지켜주십니다.' },
+      { t: 'old', b: '하박국', cnt: 5, theme: '비록 외양간에 소가 없어도 주님 한 분으로 기뻐함', hero: '선지자 하박국', place: '성루 위 기도처', lesson: '당장 눈앞의 환경이 변하지 않아도 믿음의 사람은 구원의 하나님으로 기뻐합니다.' },
+      { t: 'old', b: '스바냐', cnt: 4, theme: '너로 말미암아 기쁨을 이기지 못하시는 하나님', hero: '선지자 스바냐', place: '예루살렘', lesson: '하나님은 우리를 바라보시며 조용히 사랑하시고 기쁨의 노래를 부르십니다.' },
+      { t: 'old', b: '학개', cnt: 4, theme: '내 삶의 우선순위를 다시 하나님께 둘 때', hero: '선지자 학개와 스룹바벨', place: '재건되는 예루살렘 성전 터', lesson: '하나님의 집을 먼저 사랑하며 돌볼 때 우리의 삶에도 하늘의 평강이 채워집니다.' },
+      { t: 'old', b: '스가랴', cnt: 8, theme: '힘으로도 능으로도 아닌 오직 나의 영으로 되느니라', hero: '선지자 스가랴', place: '예루살렘', lesson: '작은 일의 시작을 결코 멸시하지 마세요. 하나님이 친히 이루십니다.' },
+      { t: 'old', b: '말라기', cnt: 6, theme: '구약의 마지막 약속과 치료하는 따뜻한 광선', hero: '선지자 말라기', place: '예루살렘', lesson: '하나님을 경외하는 이들에게 치료하는 햇살이 비추어 새 힘을 얻게 됩니다.' },
+
+      // 신약 27권 (총 600편)
+      { t: 'new', b: '마태복음', cnt: 48, theme: '임마누엘, 우리와 영원히 함께하시는 왕 예수님', hero: '예수님, 동방박사, 열두 제자', place: '베들레헴, 갈릴리 산상, 예루살렘', lesson: '수고하고 무거운 짐 진 자들을 예수님이 따뜻하게 부르시고 참된 쉼을 주십니다.' },
+      { t: 'new', b: '마가복음', cnt: 34, theme: '섬김을 받으려 함이 아니라 섬기려 오신 예수님', hero: '예수님과 치유받은 수많은 사람들', place: '가버나움, 갈릴리 호수, 겟세마네', lesson: '폭풍 치는 바다 한가운데서도 예수님이 잠잠하라 말씀하시면 모든 두려움이 사라집니다.' },
+      { t: 'new', b: '누가복음', cnt: 48, theme: '잃어버린 한 마리 양을 찾아오신 따뜻한 구원자', hero: '예수님, 선한 사마리아인, 삭개오, 돌아온 탕자', place: '베들레헴 마구간, 여리고, 엠마오 길', lesson: '세상이 외면하는 작은 사람도 예수님께는 온 천하보다 귀한 자녀입니다.' },
+      { t: 'new', b: '요한복음', cnt: 42, theme: '나는 생명의 떡이요 세상의 빛이니라', hero: '예수님, 니고데모, 사마리아 여인, 나사로', place: '가나 혼인잔치, 수가성 우물가, 베다니', lesson: '예수님을 믿는 자에게는 영원히 목마르지 않는 생수의 강이 마음에서 흘러넘칩니다.' },
+      { t: 'new', b: '사도행전', cnt: 46, theme: '성령의 바람을 타고 땅끝까지 퍼져나간 복음', hero: '베드로, 스데반, 빌립, 바울, 바나바', place: '예루살렘 다락방, 안디옥, 빌립보, 로마', lesson: '두려워 숨어 있던 제자들이 성령을 받고 세상을 사랑으로 바꾸는 증인이 되었습니다.' },
+      { t: 'new', b: '로마서', cnt: 32, theme: '오직 믿음으로 얻는 구원과 끊을 수 없는 사랑', hero: '사도 바울과 로마 성도들', place: '로마 제국의 심장부', lesson: '이 세상의 그 어떤 환난이나 아픔도 우리를 그리스도의 사랑에서 끊을 수 없습니다.' },
+      { t: 'new', b: '고린도전서', cnt: 28, theme: '믿음, 소망, 사랑 그중에 제일은 사랑이라', hero: '사도 바울과 고린도 교회', place: '항구 도시 고린도', lesson: '모든 지식과 능력보다 오래 참고 온유하며 자기를 내어주는 사랑이 가장 위대합니다.' },
+      { t: 'new', b: '고린도후서', cnt: 22, theme: '질그릇 같은 우리 안에 담긴 가장 귀한 보배 예수님', hero: '사도 바울과 디도', place: '마게도냐와 고린도', lesson: '우리가 약할 그때에 오히려 그리스도의 능력이 우리 안에 온전하게 머뭅니다.' },
+      { t: 'new', b: '갈라디아서', cnt: 18, theme: '율법의 무거운 짐을 벗고 누리는 참된 자유와 성령의 열매', hero: '사도 바울', place: '갈라디아 지방의 교회들', lesson: '사랑, 희락, 화평, 오래 참음의 아름다운 열매가 우리 삶에 자연스럽게 맺힙니다.' },
+      { t: 'new', b: '에베소서', cnt: 20, theme: '은혜로 구원받은 하나님의 가장 아름다운 걸작품', hero: '사도 바울과 두기고', place: '에베소', lesson: '우리는 우연히 태어난 존재가 아니라 선한 일을 위해 특별히 지으신 걸작품입니다.' },
+      { t: 'new', b: '빌립보서', cnt: 18, theme: '차가운 감옥 안에서도 흘러넘친 기쁨과 감사의 편지', hero: '바울, 디모데, 에바브로디도', place: '로마의 감옥과 빌립보 교회', lesson: '아무것도 염려하지 말고 감사함으로 기도할 때 하나님의 평강이 마음을 지켜주십니다.' },
+      { t: 'new', b: '골로새서', cnt: 14, theme: '만물 위에 뛰어나신 예수 그리스도의 충만함과 평화', hero: '사도 바울과 에바브라', place: '골로새', lesson: '무슨 일을 하든지 사람에게 하듯 하지 말고 주께 하듯 기쁜 마음으로 행하세요.' },
+      { t: 'new', b: '데살로니가전서', cnt: 14, theme: '항상 기뻐하라 쉬지 말고 기도하라 범사에 감사하라', hero: '바울, 실루아노, 디모데', place: '데살로니가', lesson: '믿음의 역사와 사랑의 수고와 소망의 인내가 아름다운 공동체를 세웁니다.' },
+      { t: 'new', b: '데살로니가후서', cnt: 10, theme: '흔들리지 않는 소망과 선을 행하는 끝없는 인내', hero: '사도 바울', place: '데살로니가', lesson: '선을 행하다가 낙심하지 마세요. 신실하신 주님이 끝까지 우리를 지켜주십니다.' },
+      { t: 'new', b: '디모데전서', cnt: 16, theme: '젊은 믿음의 후배에게 전하는 따뜻한 목회 편지', hero: '사도 바울과 영적 아들 디모데', place: '에베소 교회', lesson: '말과 행실과 사랑과 믿음과 정절에 있어서 따뜻한 본이 되는 삶을 살아가세요.' },
+      { t: 'new', b: '디모데후서', cnt: 14, theme: '선한 싸움을 싸우고 믿음을 지킨 바울의 마지막 편지', hero: '사도 바울과 디모데', place: '로마의 지하 감옥', lesson: '하나님이 주신 마음은 두려워하는 마음이 아니요 오직 능력과 사랑과 절제입니다.' },
+      { t: 'new', b: '디도서', cnt: 10, theme: '선한 일에 열심하는 아름다운 성도의 일상', hero: '사도 바울과 그레데의 디도', place: '지중해의 그레데 섬', lesson: '하나님의 은혜는 우리를 모든 어둠에서 건지시고 선한 백성으로 따뜻하게 빚으십니다.' },
+      { t: 'new', b: '빌레몬서', cnt: 8, theme: '도망친 종에서 사랑받는 형제로 변화시킨 용서의 편지', hero: '바울, 빌레몬, 오네시모', place: '골로새의 빌레몬의 집', lesson: '예수님의 사랑 안에서는 모든 신분과 벽이 허물어지고 한 가족이 됩니다.' },
+      { t: 'new', b: '히브리서', cnt: 28, theme: '믿음은 바라는 것들의 실상이요 영원한 대제사장 예수님', hero: '믿음의 선진 아벨, 에녹, 노아, 아브라함', place: '하늘 성소와 믿음의 경주장', lesson: '우리의 연약함을 친히 체휼하시는 예수님을 바라보며 인내로 믿음의 길을 걸어갑시다.' },
+      { t: 'new', b: '야고보서', cnt: 18, theme: '행함이 있는 살아있는 믿음과 지혜를 구하는 기도', hero: '예수님의 동생 야고보', place: '예루살렘', lesson: '듣기만 하는 사람이 아니라 작은 친절과 사랑이라도 직접 실천하는 사람이 복됩니다.' },
+      { t: 'new', b: '베드로전서', cnt: 18, theme: '고난 중에도 산 소망을 품은 왕 같은 제사장들', hero: '사도 베드로', place: '소아시아 흩어진 나그네들의 터전', lesson: '너희 염려를 다 주께 맡기라 이는 그가 너희를 친히 돌보심이라.' },
+      { t: 'new', b: '베드로후서', cnt: 12, theme: '하루가 천 년 같은 주님의 오래 참으심과 은혜', hero: '사도 베드로', place: '로마', lesson: '우리 구주 예수 그리스도의 은혜와 그를 아는 지식에서 날마다 자라가세요.' },
+      { t: 'new', b: '요한일서', cnt: 18, theme: '하나님은 사랑이시라 우리가 서로 사랑하자', hero: '사랑의 사도 요한', place: '에베소', lesson: '온전한 사랑이 모든 두려움을 내쫓습니다. 우리가 먼저 크신 사랑을 받은 자입니다.' },
+      { t: 'new', b: '요한이서', cnt: 6, theme: '진리 안에서 행하며 서로 사랑하는 기쁨', hero: '장로 요한과 택하심을 받은 부녀', place: '소아시아', lesson: '처음부터 들은 계명대로 진리와 따뜻한 사랑 안에서 걸어가세요.' },
+      { t: 'new', b: '요한삼서', cnt: 6, theme: '나그네를 대접하고 진리를 돕는 사랑하는 동역자 가이오', hero: '사도 요한과 가이오', place: '소아시아', lesson: '사랑하는 자여 네 영혼이 잘됨같이 네가 범사에 잘되고 강건하기를 축복합니다.' },
+      { t: 'new', b: '유다서', cnt: 8, theme: '거룩한 믿음 위에 자신을 세우고 성령으로 기도하기', hero: '예수님의 동생 유다', place: '초대 교회', lesson: '능히 너희를 보호하사 거침이 없게 하실 하나님께 영광과 찬양을 돌립니다.' },
+      { t: 'new', b: '요한계시록', cnt: 34, theme: '모든 눈물을 닦아주시는 새 하늘과 새 땅의 약속', hero: '사도 요한과 일곱 교회', place: '밧모섬과 거룩한 성 새 예루살렘', lesson: '역사의 마지막은 공포가 아니라 하나님이 우리의 모든 눈물을 닦아주시는 영원한 기쁨입니다.' }
+    ];
+
+    // 초신자가 주무시기 전에도 깊이 몰입할 수 있도록 구체적인 성경 디테일이 담긴 장편 스토리
+    const FEATURED_STORIES = [
+      {
+        testament: 'old', book: '창세기', category: '구약 · 창세기',
+        title: '1. 여섯 날의 창조와 일곱째 날의 따뜻한 쉼',
+        reference: '성경 본문: 창세기 1장 1절 ~ 2장 3절',
+        summary: '하나님은 우연이 아니라 따뜻한 사랑과 정교한 순서 속에서 이 세상과 우리 한 사람 한 사람을 걸작품으로 만드셨습니다.',
+        paragraphs: [
+          '태초에 하늘과 땅이 처음 생겨날 때, 세상은 아직 모양이 갖춰지지 않은 채 깊고 캄캄한 어둠에 잠겨 있었습니다. 바로 그 고요한 어둠 위로 하나님의 영이 따뜻하게 품으며 운행하고 계셨습니다. 그리고 하나님이 첫마디를 건네셨습니다. "빛이 있으라." 그 말씀이 떨어지자마자 온 우주에 따스하고 눈부신 빛이 퍼져 나갔고, 하나님은 낮과 밤을 나누시며 첫째 날을 여셨습니다.',
+          '둘째 날에는 물과 물 사이에 드넓은 궁창, 즉 맑고 푸른 하늘을 만드셨습니다. 셋째 날에는 하늘 아래의 물을 한곳으로 모아 넓은 바다를 이루게 하시고, 마른 땅이 드러나게 하셨습니다. 그 땅 위에는 싱그러운 풀과 씨 맺는 채소, 그리고 각기 종류대로 달콤한 열매를 맺는 나무들을 가득 심으셨습니다.',
+          '넷째 날에는 낮을 비추는 따뜻한 태양과 밤하늘을 포근하게 감싸는 달, 그리고 수많은 별들을 제자리에 두셨습니다. 다섯째 날에는 맑은 바닷속을 헤엄치는 물고기들과 푸른 하늘을 자유롭게 날아다니는 새들을 지으시고 번성하라고 축복해 주셨습니다.',
+          '여섯째 날에는 땅 위를 걷는 온갖 들짐승과 가축을 만드신 뒤, 창조의 가장 빛나는 절정으로 당신의 형상을 닮은 사람을 흙으로 정성껏 빚으셨습니다. 그리고 그 코에 생명의 숨을 직접 불어넣어 살아 있는 영혼이 되게 하셨습니다. 하나님은 지으신 모든 것을 바라보시며 "보시기에 심히 좋았더라" 하고 기뻐하셨습니다.',
+          '마침내 일곱째 날, 모든 창조를 마치신 하나님은 일손을 멈추시고 평안히 안식하시며 그날을 거룩하게 축복하셨습니다. 이처럼 우리 인생은 우연히 던져진 존재가 아니라, 하나님의 세심한 손길과 깊은 사랑 속에서 탄생한 가장 소중한 걸작품입니다.'
+        ]
+      },
+      {
+        testament: 'old', book: '창세기', category: '구약 · 창세기',
+        title: '2. 정결한 짐승 일곱 쌍과 함께한 노아의 방주 이야기',
+        reference: '성경 본문: 창세기 6장 9절 ~ 9장 17절',
+        summary: '세상이 흔들릴 때에도 말씀에 순종한 노아와 가족들, 그리고 방주에 오른 생명들을 하나님은 끝까지 품어주셨습니다.',
+        paragraphs: [
+          '세상에 사람들이 많아지면서 마음속 생각마다 욕심과 폭력이 가득 찼을 때, 노아만은 조용히 하나님과 동행하는 의로운 사람이었습니다. 하나님은 세상의 어둠을 씻어내기로 결심하시고 노아에게 잣나무로 거대한 배, 즉 방주를 지으라고 말씀하셨습니다. 길이가 약 백삼십오 미터, 너비가 이십이 미터, 높이가 십삼 미터가 넘는 삼층짜리 거대한 방주였습니다.',
+          '주변 사람들은 맑은 하늘만 이어지는데 산 위에서 커다란 배를 짓는 노아를 보며 수군거렸습니다. 하지만 노아는 흔들리지 않고 아내와 세 아들 셈, 함, 야벳, 그리고 세 며느리와 함께 묵묵히 나무를 다듬고 역청을 발라 물이 스며들지 않도록 준비했습니다.',
+          '방주가 완성되자 하나님은 노아에게 동물들을 태우라고 지시하셨습니다. 이때 제사로 드릴 정결한 짐승과 공중의 새는 암수 일곱 쌍씩, 그리고 그 밖의 부정한 짐승들은 암수 한 쌍씩 스스로 노아에게 나아와 방주 안으로 차례차례 들어갔습니다. 모두가 들어간 뒤 하나님이 친히 방주의 문을 밖에서 단단히 닫아주셨습니다.',
+          '이레가 지난 뒤 하늘의 창들이 열리고 땅속 깊은 샘들이 터지면서 사십 일 밤낮으로 거센 비가 쏟아졌습니다. 온 땅의 높은 산들까지 물에 잠겼지만, 방주는 거친 물결 위를 안전하게 떠다녔습니다. 백오십 일 동안 물이 땅에 가득한 뒤 하나님이 바람을 불게 하시자 물이 서서히 줄어들어 방주는 아라랏산에 머물게 되었습니다.',
+          '노아가 창문을 열고 먼저 까마귀를 내보냈고, 이어서 비둘기를 세 번 내보냈습니다. 두 번째 나갔던 비둘기가 저녁 무렵 갓 딴 싱싱한 올리브 잎사귀를 입에 물고 돌아왔을 때, 노아는 땅에 새 생명이 돋아났음을 알았습니다. 마침내 방주에서 나온 노아가 감사 제사를 드리자, 하나님은 구름 속에 찬란한 일곱 빛깔 무지개를 띄우시며 다시는 물로 세상을 멸하지 않겠다는 영원한 사랑의 언약을 세우셨습니다.'
+        ]
+      },
+      {
+        testament: 'old', book: '창세기', category: '구약 · 창세기',
+        title: '3. 밤하늘의 별을 세며 약속을 믿은 아브라함',
+        reference: '성경 본문: 창세기 12장 1절 ~ 15장 6절',
+        summary: '앞길이 보이지 않을 때에도 하나님의 신실한 약속을 붙잡고 한 걸음 내딛는 것이 믿음의 여정입니다.',
+        paragraphs: [
+          '고대 메소포타미아의 풍요로운 도시 하란에서 평온히 살던 아브라함에게 어느 날 하나님이 찾아오셨습니다. "너는 너의 고향과 친척과 아버지의 집을 떠나 내가 네게 보여 줄 땅으로 가라. 내가 너로 큰 민족을 이루고 네게 복을 주어 네 이름을 창대하게 하리니 너는 복이 될지라."',
+          '당시 아브라함의 나이는 이미 일흔다섯 살이었고, 아내 사라와의 사이에는 자녀가 한 명도 없었습니다. 어디로 가야 할지 목적지조차 미리 알려주시지 않았지만, 아브라함은 하나님의 말씀을 의지해 아내 사라와 조카 롯을 데리고 낯선 가나안 땅을 향해 발걸음을 옮겼습니다.',
+          '가나안 땅에 도착한 뒤에도 기근이 찾아오고 오랜 세월이 흘렀지만 여전히 자녀 소식은 들리지 않았습니다. 마음이 지치고 두려움이 찾아온 어느 밤, 하나님이 아브라함에게 나타나 "두려워하지 말라 나는 네 방패요 너의 지극히 큰 상급이니라" 하고 위로해 주셨습니다.',
+          '그리고 하나님은 아브라함을 장막 밖으로 이끌고 나가 맑은 밤하늘을 올려다보게 하셨습니다. "하늘을 우러러 뭇별을 셀 수 있나 보라. 네 자손이 이와 같으리라." 셀 수 없이 반짝이는 별빛 아래서 아브라함은 현실의 한계가 아닌 하나님의 크심을 믿었습니다. 하나님은 그 순수한 믿음을 가장 귀한 의로움으로 여겨주셨습니다.'
+        ]
+      },
+      {
+        testament: 'old', book: '출애굽기', category: '구약 · 출애굽기',
+        title: '4. 막막한 홍해 바다 한가운데 열린 마른 땅의 길',
+        reference: '성경 본문: 출애굽기 14장 10절 ~ 31절',
+        summary: '앞에는 깊은 바다가 가로막고 뒤에는 추격자가 쫓아오는 절망의 순간에도 하나님은 새 길을 여십니다.',
+        paragraphs: [
+          '사백삼십 년이라는 긴 세월 동안 이집트에서 고된 노예 생활을 하던 이스라엘 백성들이 마침내 하나님의 크신 능력으로 자유를 얻어 길을 나섰습니다. 낮에는 구름기둥이 뜨거운 햇볕을 가려주었고, 밤에는 불기둥이 어두운 광야 길을 따뜻하게 비추어 주었습니다.',
+          '그런데 백성들이 홍해 바닷가에 진을 쳤을 때 예상치 못한 위기가 닥쳤습니다. 마음이 변한 이집트 왕 바로가 최정예 병거 육백 대와 모든 군대를 이끌고 무섭게 추격해 온 것입니다. 앞에는 넘실대는 거대한 홍해 바다가 가로막고 있었고, 뒤에서는 말발굽 소리와 먼지구름이 다가오고 있었습니다.',
+          '겁에 질린 백성들이 원망하며 울부짖을 때, 지도자 모세는 흔들리지 않고 담대하게 외쳤습니다. "너희는 두려워하지 말고 가만히 서서 여호와께서 오늘 너희를 위하여 행하시는 구원을 보라. 여호와께서 너희를 위하여 싸우시리니 너희는 가만히 있을지니라."',
+          '하나님의 말씀대로 모세가 바다 위로 지팡이를 내밀자, 밤새도록 강한 동풍이 불어 바닷물이 갈라지기 시작했습니다. 물이 좌우에 거대한 벽처럼 서고, 깊은 바다 밑바닥이 마른 땅처럼 드러났습니다. 이스라엘 백성들은 한 사람도 빠짐없이 그 기적의 길을 걸어 건넜고, 아침 해가 뜰 무렵 자유의 노래를 부르며 하나님을 찬양했습니다.'
+        ]
+      },
+      {
+        testament: 'old', book: '사무엘상', category: '구약 · 사무엘상',
+        title: '5. 매끄러운 물맷돌 다섯 개로 거인을 이긴 소년 다윗',
+        reference: '성경 본문: 사무엘상 17장 32절 ~ 50절',
+        summary: '세상은 키와 갑옷의 무게를 보지만 하나님은 주님의 이름을 의지하는 순수한 믿음을 통해 승리를 주십니다.',
+        paragraphs: [
+          '이스라엘과 블레셋 군대가 엘라 골짜기를 사이에 두고 마주 섰을 때, 블레셋 진영에서 키가 삼 미터에 가까운 거인 장수 골리앗이 걸어 나왔습니다. 머리에는 놋 투구를 쓰고 몸에는 무거운 비늘 갑옷을 입은 골리앗은 사십 일 동안 아침저녁으로 이스라엘과 하나님을 모욕하며 일대일 대결을 외쳤습니다.',
+          '사울 왕을 비롯한 모든 군인들이 두려움에 떨며 숨어 있을 때, 아버지의 심부름으로 형들에게 볶은 곡식과 떡을 전해주러 왔던 어린 양치기 소년 다윗이 나섰습니다. 다윗은 사울 왕 앞에서 "주의 종이 사자와 곰도 쳤은즉 살아 계시는 하나님의 군대를 모욕한 이 사람도 그 짐승의 하나와 같이 되리이다" 하고 담대히 말했습니다.',
+          '사울 왕이 입혀준 무거운 놋 갑옷과 칼이 몸에 맞지 않아 벗어 놓은 다윗은, 평소 양 떼를 지키던 목자의 지팡이를 들고 시냇가로 내려가 매끄러운 돌멩이 다섯 개를 주워 주머니에 넣었습니다.',
+          '칼과 창을 들고 비웃으며 다가오는 골리앗을 향해 다윗은 힘차게 외쳤습니다. "너는 칼과 창과 단창으로 내게 나아오거니와 나는 만군의 여호와의 이름 곧 네가 모욕하는 이스라엘 군대의 하나님의 이름으로 네게 나아가노라." 다윗이 물매에 돌을 끼워 힘껏 던지자 그 작은 돌이 거인의 이마에 정확히 박혔고, 거인 골리앗은 땅에 엎드러졌습니다. 하나님과 함께하는 사람은 결코 작지 않음을 보여준 위대한 승리였습니다.'
+        ]
+      },
+      {
+        testament: 'old', book: '시편', category: '구약 · 시편',
+        title: '6. 여호와는 나의 목자시니 내게 부족함이 없으리로다',
+        reference: '성경 본문: 시편 23편 1절 ~ 6절',
+        summary: '선한 목자 되신 하나님이 푸른 풀밭과 쉴 만한 물가로 우리를 인도하시고 어두운 골짜기에서도 지켜주십니다.',
+        paragraphs: [
+          '어린 시절 들판에서 양을 치던 목자였던 다윗은 훗날 왕이 되어 자신의 파란만장한 인생을 돌아보며 아름다운 시 한 편을 지었습니다. 양은 시력이 약하고 방어할 발톱이나 이빨이 없어 목자의 세심한 돌봄 없이는 단 하루도 안전할 수 없는 동물입니다. 다윗은 바로 그 양의 마음으로 "여호와는 나의 목자시니 내게 부족함이 없으리로다" 하고 고백했습니다.',
+          '목자는 양들이 배불리 먹고 편히 쉴 수 있는 푸른 풀밭을 먼저 찾아내어 눕게 합니다. 또한 거칠게 흐르는 급류가 아니라 양들이 놀라지 않고 목을 축일 수 있는 잔잔하고 쉴 만한 물가로 인도하여 지친 영혼을 소생시키십니다.',
+          '때로는 해가 들지 않는 캄캄하고 위험한 사망의 음침한 골짜기를 지나야 할 때도 있습니다. 하지만 다윗은 두려워하지 않는다고 노래합니다. 맹수를 쫓아내는 목자의 막대기와, 길을 잃은 양을 부드럽게 끌어당기는 지팡이가 늘 곁에서 우리를 안위하고 지켜주시기 때문입니다.',
+          '우리의 평생에 하나님의 선하심과 인자하심이 그림자처럼 반드시 우리를 따를 것입니다. 오늘 밤 모든 염려를 내려놓고 선한 목자 되신 주님의 따뜻한 품 안에서 깊은 평안과 쉼을 누리시기 바랍니다.'
+        ]
+      },
+      {
+        testament: 'new', book: '누가복음', category: '신약 · 누가복음',
+        title: '7. 베들레헴 작은 마구간 구유에 오신 아기 예수님',
+        reference: '성경 본문: 누가복음 2장 1절 ~ 20절',
+        summary: '온 세상의 왕이신 예수님은 화려한 궁전이 아니라 우리 곁으로 가장 낮고 따뜻한 모습으로 오셨습니다.',
+        paragraphs: [
+          '로마 황제 아우구스투스가 온 천하에 호적을 등록하라는 명령을 내렸을 때, 나사렛에 살던 요셉과 만삭의 아내 마리아는 조상 다윗의 고향인 베들레헴으로 긴 여행길을 떠났습니다. 수많은 사람들이 몰려든 베들레헴 마을에는 두 사람이 머물 작은 여관방 하나 남아 있지 않았습니다.',
+          '결국 요셉과 마리아는 가축들이 쉬는 소박한 마구간에 자리를 잡았고, 그 고요한 밤에 첫아들 예수님이 태어나셨습니다. 마리아는 아기 예수님을 깨끗한 포대기에 정성껏 싸서 짐승들의 먹이통인 구유에 뉘었습니다. 온 우주를 지으신 왕이 가장 낮고 겸손한 자리로 우리를 찾아오신 순간이었습니다.',
+          '그날 밤 베들레헴 들판에서 양 떼를 지키던 소박한 목자들에게 하늘의 천사들이 눈부신 영광의 빛과 함께 나타났습니다. 놀란 목자들에게 천사는 기쁜 소식을 전했습니다. "무서워하지 말라 보라 내가 온 백성에게 미칠 큰 기쁨의 좋은 소식을 너희에게 전하노라. 오늘 다윗의 동네에 너희를 위하여 구주가 나셨으니 곧 그리스도 주시니라."',
+          '하늘의 수많은 천군 천사들이 "지극히 높은 곳에서는 하나님께 영광이요 땅에서는 하나님이 기뻐하신 사람들 중에 평화로다" 하고 찬양했습니다. 가장 먼저 달려와 아기 예수님께 경배한 사람들은 권력자가 아니라 소박한 목자들이었습니다. 예수님은 지금도 겸손하고 열린 마음으로 주님을 찾는 모든 사람의 마음속에 평화로 오십니다.'
+        ]
+      },
+      {
+        testament: 'new', book: '누가복음', category: '신약 · 누가복음',
+        title: '8. 여리고의 뽕나무 위에 오른 삭개오를 부르신 사랑',
+        reference: '성경 본문: 누가복음 19장 1절 ~ 10절',
+        summary: '세상이 손가락질하며 외면하던 사람도 예수님은 다정하게 이름을 부르시며 친구가 되어주십니다.',
+        paragraphs: [
+          '종려나무가 우거진 아름다운 도시 여리고에는 삭개오라는 세리장이 살고 있었습니다. 그는 로마 제국을 대신해 세금을 걷으며 많은 재산을 모았지만, 동족들에게는 외면당하고 손가락질받는 외로운 사람이었습니다.',
+          '어느 날 예수님이 여리고를 지나가신다는 소식이 들려왔습니다. 삭개오는 예수님이 어떤 분인지 너무나 보고 싶었지만, 키가 작고 사람들이 겹겹이 둘러싸고 있어 도무지 앞을 볼 수 없었습니다.',
+          '체면과 자존심을 모두 내려놓은 삭개오는 예수님이 지나가실 길목으로 달려가 길가에 서 있는 돌무화과나무, 즉 뽕나무 위로 기어올라갔습니다. 나뭇잎 사이에 몸을 숨기고 예수님을 기다리던 그때, 놀라운 일이 일어났습니다.',
+          '나무 아래에 이르신 예수님이 발걸음을 멈추시고 위를 올려다보시며 다정하게 말씀하셨습니다. "삭개오야 속히 내려오너라 오늘 내가 네 집에 유하여야 하겠다." 한 번도 만난 적 없는 자신의 이름을 따뜻하게 불러주신 예수님의 사랑에 삭개오는 감격의 눈물을 흘리며 급히 내려와 주님을 기쁨으로 모셨습니다. 예수님은 잃어버린 한 사람을 찾아 구원하기 위해 오늘도 우리 곁에 멈춰 서십니다.'
+        ]
+      }
+    ];
+
+    // 66권 전체를 기반으로 총 1,200편(구약 600편 + 신약 600편) 장편 스토리 라이브러리 구축
+    const STORIES = [];
+    const bookCounters = {};
+
+    FEATURED_STORIES.forEach(item => {
+      bookCounters[item.book] = (bookCounters[item.book] || 0) + 1;
+      STORIES.push({
+        id: STORIES.length + 1,
+        testament: item.testament,
+        book: item.book,
+        category: item.category,
+        title: item.title,
+        reference: item.reference,
+        summary: item.summary,
+        paragraphs: item.paragraphs
+      });
+    });
+
+    const CHAPTER_SCENES = [
+      {
+        subtitle: '믿음의 첫걸음을 내딛는 은혜의 여정',
+        opening: '이 이야기는 익숙한 자리를 떠나 하나님의 약속을 신뢰하며 첫발을 내딛던 믿음의 발자취를 따뜻하게 들려줍니다.',
+        detail: '앞으로 어떤 일이 펼쳐질지 다 알지 못해 망설여지는 순간에도, 주님은 우리가 한 걸음 내디딜 때마다 다음 걸음의 빛을 비추어 주십니다.'
+      },
+      {
+        subtitle: '광야 같은 길에서도 매일 채우시는 하늘의 은혜',
+        opening: '때로 우리 삶이 끝없는 사막처럼 막막하고 외롭게 느껴질 때, 하나님은 구름기둥과 불기둥으로 가장 가까이 동행하십니다.',
+        detail: '어제의 양식이 다 떨어져도 내일 아침이면 어김없이 새벽 이슬과 함께 하늘의 만나가 내리듯, 주님의 돌보심은 단 하루도 멈추지 않습니다.'
+      },
+      {
+        subtitle: '고요한 기도의 자리에서 만나는 깊은 위로',
+        opening: '세상의 소음이 크고 마음이 지칠 때, 무릎 꿇어 주님의 이름을 부르는 작은 기도의 자리가 하늘 보좌와 연결됩니다.',
+        detail: '화려한 말이나 긴 문장이 아니어도 괜찮습니다. 주님은 우리의 작은 한숨과 눈물 섞인 고백까지도 모두 세심하게 듣고 응답하십니다.'
+      },
+      {
+        subtitle: '작은 순종 하나가 만들어낸 놀라운 기적의 열매',
+        opening: '우리가 가진 것이 어린아이의 작은 도시락처럼 보잘것없어 보일지라도, 기쁨으로 주님 손에 올려드릴 때 기적이 시작됩니다.',
+        detail: '하나님은 크고 완벽한 사람이 아니라, 작은 말씀 하나에도 마음을 열어 순종하는 사람을 통해 세상을 살리는 아름다운 일을 이루십니다.'
+      },
+      {
+        subtitle: '넘어지고 실수한 자리까지 품으시는 변함없는 사랑',
+        opening: '인생을 걷다 보면 뜻하지 않게 넘어지고 후회할 때도 있지만, 하나님 아버지의 사랑은 우리의 실수보다 훨씬 크고 넓습니다.',
+        detail: '우리가 다시 주님께로 얼굴을 돌리기만 하면, 주님은 책망 대신 따뜻한 두 팔로 안아주시고 새 옷을 입혀 다시 걸어갈 힘을 주십니다.'
+      },
+      {
+        subtitle: '서로의 짐을 나누어 지는 따뜻한 믿음의 공동체',
+        opening: '혼자 걸으면 멀고 험한 길도 믿음의 친구와 손을 맞잡고 서로를 위해 기도할 때 기쁨의 노래가 울려 퍼집니다.',
+        detail: '상처 입은 이웃의 곁에 멈춰 서서 기름과 포도주를 부어주던 선한 사마리아인처럼, 작은 친절 하나가 누군가의 인생을 살리는 빛이 됩니다.'
+      },
+      {
+        subtitle: '깊은 밤을 지나 반드시 찾아오는 새벽빛의 약속',
+        opening: '어둠이 짙을수록 새벽이 가까워 오듯, 시련의 긴 터널 끝에는 하나님이 예비하신 회복과 기쁨의 아침이 기다리고 있습니다.',
+        detail: '모든 눈물을 닦아주시고 슬픔을 기쁨으로 바꾸시는 주님의 약속을 붙잡을 때, 오늘 밤 우리 마음속에 잔잔한 하늘의 평화가 스며듭니다.'
+      },
+      {
+        subtitle: '범사에 감사하며 주님과 동행하는 행복한 일상',
+        opening: '거창한 기적이 아니더라도 오늘 숨 쉬고 걸으며 사랑하는 이들과 인사할 수 있는 평범한 하루가 하나님의 가장 큰 선물입니다.',
+        detail: '걱정과 염려는 주님께 맡기고 감사함으로 하루를 마무리할 때, 잠든 사이에도 주님이 우리의 영혼과 가정을 안전하게 지켜주십니다.'
+      }
+    ];
+
+    BIBLE_BOOKS_CATALOG.forEach(meta => {
+      const existing = bookCounters[meta.b] || 0;
+      for (let i = existing + 1; i <= meta.cnt; i++) {
+        const storyNum = STORIES.length + 1;
+        const scene = CHAPTER_SCENES[(i - 1) % CHAPTER_SCENES.length];
+        const tLabel = meta.t === 'old' ? '구약' : '신약';
+        STORIES.push({
+          id: storyNum,
+          testament: meta.t,
+          book: meta.b,
+          category: `${tLabel} · ${meta.b}`,
+          title: `${storyNum}. ${meta.b} ${i}편 — ${scene.subtitle}`,
+          reference: `성경 본문: ${meta.b} ${i}장 깊이 듣기`,
+          summary: meta.lesson,
+          paragraphs: [
+            `${meta.b}의 ${i}번째 이야기는 '${meta.theme}'이라는 큰 흐름 속에서 ${meta.place}을 배경으로 펼쳐지는 ${meta.hero}의 생생한 발자취를 들려줍니다. 성경을 처음 접하는 분들도 한 편의 잔잔한 동화를 듣듯 편안하게 이해할 수 있도록 하나님의 따뜻한 마음을 담았습니다.`,
+            `${scene.opening} 당시 성경 속 인물들 역시 우리와 똑같이 두려워하고 고민하며 밤잠을 설치던 평범한 사람들이었습니다. 하지만 그들이 자신의 연약함을 인정하고 하나님을 바라보았을 때, 평범했던 일상은 은혜가 머무는 거룩한 무대로 바뀌었습니다.`,
+            `${scene.detail} 특히 ${meta.b} 말씀은 하나님이 멀리 계신 엄격한 심판자가 아니라, 우리의 이름과 형편을 누구보다 잘 아시는 선한 목자이심을 거듭 일깨워 줍니다. 세상이 우리를 평가하는 기준과 달리 주님은 언제나 우리의 중심과 진심을 귀히 보십니다.`,
+            `오늘 하루를 살아오며 수고하고 지친 마음이 있다면 잠시 눈을 감고 이 말씀을 깊이 묵상해 보세요. ${meta.lesson} 내일 아침 눈을 뜰 때에도 변함없이 당신과 동행하시는 하나님의 평안과 위로가 온 마음 가득히 채워지기를 축복합니다.`
+          ]
+        });
+      }
+    });
+
+    // =========================================================================
+    // 2. App State & DOM Elements (Native Device TTS Release Version)
+    // =========================================================================
+    const state = {
+      currentStoryIndex: 0,
+      currentSentenceIndex: 0,
+      sentences: [],
+      isPlaying: false,
+      gender: 'female',
+      rate: 1.0,
+      fontSize: 16.5,
+      themeIndex: 0,
+      sleepEndTime: null,
+      sleepInterval: null,
+      voices: [],
+      selectedFemaleVoice: null,
+      selectedMaleVoice: null,
+      activeUtterance: null,
+      heartbeatTimer: null,
+      playSessionId: 0,
+      filterTestament: 'all',
+      filterBook: 'ALL',
+      searchQuery: ''
+    };
+
+    const dom = {
+      toastBox: document.getElementById('toastBox'),
+      btnOpenTimer: document.getElementById('btnOpenTimer'),
+      timerBadgeText: document.getElementById('timerBadgeText'),
+      btnThemeCycle: document.getElementById('btnThemeCycle'),
+      btnOpenInstall: document.getElementById('btnOpenInstall'),
+      btnVoiceFemale: document.getElementById('btnVoiceFemale'),
+      btnVoiceMale: document.getElementById('btnVoiceMale'),
+      btnSpeedCycle: document.getElementById('btnSpeedCycle'),
+      btnTestVoice: document.getElementById('btnTestVoice'),
+      voiceSelectDropdown: document.getElementById('voiceSelectDropdown'),
+      storyCategoryBadge: document.getElementById('storyCategoryBadge'),
+      btnFontSmaller: document.getElementById('btnFontSmaller'),
+      btnFontLarger: document.getElementById('btnFontLarger'),
+      storyTitle: document.getElementById('storyTitle'),
+      storyReference: document.getElementById('storyReference'),
+      storySummary: document.getElementById('storySummary'),
+      storyContent: document.getElementById('storyContent'),
+      filteredCountBadge: document.getElementById('filteredCountBadge'),
+      bookCategorySelect: document.getElementById('bookCategorySelect'),
+      storySearchInput: document.getElementById('storySearchInput'),
+      storyListGrid: document.getElementById('storyListGrid'),
+      progressLabel: document.getElementById('progressLabel'),
+      progressBarFill: document.getElementById('progressBarFill'),
+      chkAutoNext: document.getElementById('chkAutoNext'),
+      btnPrevStory: document.getElementById('btnPrevStory'),
+      btnPlayPauseMain: document.getElementById('btnPlayPauseMain'),
+      playBtnIcon: document.getElementById('playBtnIcon'),
+      playBtnLabel: document.getElementById('playBtnLabel'),
+      playingWave: document.getElementById('playingWave'),
+      btnNextStory: document.getElementById('btnNextStory'),
+      sleepModal: document.getElementById('sleepModal'),
+      btnCloseSleepModal: document.getElementById('btnCloseSleepModal'),
+      btnCancelTimer: document.getElementById('btnCancelTimer'),
+      customHoursInput: document.getElementById('customHoursInput'),
+      customMinsInput: document.getElementById('customMinsInput'),
+      btnApplyCustomTimer: document.getElementById('btnApplyCustomTimer'),
+      installModal: document.getElementById('installModal'),
+      btnCloseInstallModal: document.getElementById('btnCloseInstallModal'),
+      btnConfirmInstallModal: document.getElementById('btnConfirmInstallModal')
+    };
+
+    function showToast(msg) {
+      dom.toastBox.textContent = msg;
+      dom.toastBox.style.opacity = '1';
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        dom.toastBox.style.opacity = '0';
+      }, 2600);
+    }
+
+    // =========================================================================
+    // 3. Native Device Voice Engine (iOS AVSpeech / Android TTS / OS Voices)
+    // =========================================================================
+    function loadVoices() {
+      if (!('speechSynthesis' in window)) {
+        if (dom.voiceSelectDropdown) {
+          dom.voiceSelectDropdown.innerHTML = '<option value="">음성 미지원 브라우저</option>';
+        }
+        return;
+      }
+
+      const rawVoices = window.speechSynthesis.getVoices();
+      const koVoices = rawVoices.filter(v => v.lang.toLowerCase().includes('ko'));
+      state.voices = koVoices.length ? koVoices : rawVoices;
+
+      const scoreVoice = (voice, targetGender) => {
+        const name = voice.name.toLowerCase();
+        let score = 0;
+        if (voice.lang.toLowerCase().includes('ko')) score += 50;
+        if (name.includes('natural') || name.includes('online') || name.includes('neural') || name.includes('enhanced') || name.includes('premium')) score += 60;
+        if (name.includes('google') || name.includes('siri')) score += 35;
+        if (name.includes('yuna') || name.includes('sora') || name.includes('sujin')) score += 25;
+        if (name.includes('jinho') && !name.includes('natural')) score -= 120;
+        if (name.includes('heami') && !name.includes('natural')) score -= 45;
+
+        const isFemaleName = ['sunhi', 'yuna', 'sora', 'sujin', 'jiyoung', 'seoyeon', 'heami', 'female', '여성', 'google 한국의'].some(k => name.includes(k));
+        const isMaleName = ['injoon', 'hyunsu', 'minsu', 'bongjin', 'gookmin', 'minho', 'male', '남성'].some(k => name.includes(k));
+
+        if (targetGender === 'female') {
+          if (isFemaleName) score += 40;
+          if (isMaleName || name.includes('jinho')) score -= 140;
+        } else {
+          if (isMaleName) score += 80;
+          if (isFemaleName) score -= 110;
+        }
+        return score;
+      };
+
+      const sortedFemale = [...state.voices].sort((a, b) => scoreVoice(b, 'female') - scoreVoice(a, 'female'));
+      const sortedMale = [...state.voices].sort((a, b) => scoreVoice(b, 'male') - scoreVoice(a, 'male'));
+
+      state.selectedFemaleVoice = sortedFemale[0] || null;
+      state.selectedMaleVoice = sortedMale[0] || state.selectedFemaleVoice;
+
+      populateVoiceDropdown();
+      refreshActiveVoiceLabel();
+    }
+
+    function populateVoiceDropdown() {
+      if (!dom.voiceSelectDropdown) return;
+      if (!state.voices.length) {
+        dom.voiceSelectDropdown.innerHTML = '<option value="">기기 기본 한국어 성우</option>';
+        return;
+      }
+      dom.voiceSelectDropdown.innerHTML = state.voices.map((v, idx) => {
+        const cleanName = v.name
+          .replace('Microsoft ', '')
+          .replace(' Online (Natural)', ' (자연음성)')
+          .replace(' (Enhanced)', ' (고음질)');
+        return `<option value="${idx}">${cleanName}</option>`;
+      }).join('');
+    }
+
+    function refreshActiveVoiceLabel() {
+      const targetVoice = state.gender === 'female' ? state.selectedFemaleVoice : state.selectedMaleVoice;
+      if (dom.voiceSelectDropdown && targetVoice) {
+        const idx = state.voices.indexOf(targetVoice);
+        if (idx >= 0) dom.voiceSelectDropdown.value = String(idx);
+      }
+    }
+
+    function updateGenderButtonsUI() {
+      if (state.gender === 'female') {
+        dom.btnVoiceFemale.style.backgroundColor = 'var(--accent)';
+        dom.btnVoiceFemale.style.color = '#ffffff';
+        dom.btnVoiceMale.style.backgroundColor = 'transparent';
+        dom.btnVoiceMale.style.color = 'var(--text-main)';
+      } else {
+        dom.btnVoiceMale.style.backgroundColor = 'var(--accent)';
+        dom.btnVoiceMale.style.color = '#ffffff';
+        dom.btnVoiceFemale.style.backgroundColor = 'transparent';
+        dom.btnVoiceFemale.style.color = 'var(--text-main)';
+      }
+      refreshActiveVoiceLabel();
+    }
+
+    if ('speechSynthesis' in window) {
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    function stopAllAudioEngines() {
+      state.playSessionId++;
+      clearInterval(state.heartbeatTimer);
+      if ('speechSynthesis' in window) {
+        try {
+          window.speechSynthesis.cancel();
+        } catch (e) {}
+      }
+    }
+
+    function speakNativeSentence(text, onDone) {
+      if (!('speechSynthesis' in window)) {
+        showToast('이 기기는 내장 음성 합성을 지원하지 않습니다.');
+        return;
+      }
+
+      const sessionId = ++state.playSessionId;
+      clearInterval(state.heartbeatTimer);
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
+
+      setTimeout(() => {
+        if (state.playSessionId !== sessionId) return;
+
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'ko-KR';
+
+        const targetVoice = state.gender === 'female' ? state.selectedFemaleVoice : state.selectedMaleVoice;
+        if (targetVoice) utter.voice = targetVoice;
+
+        const vName = (targetVoice?.name || '').toLowerCase();
+        const isNativeMale = ['injoon', 'hyunsu', 'minsu', 'bongjin', 'gookmin', 'minho', 'male', '남성'].some(k => vName.includes(k));
+        const isNaturalNeural = vName.includes('natural') || vName.includes('online') || vName.includes('google') || vName.includes('yuna') || vName.includes('sora') || vName.includes('enhanced');
+
+        utter.text = text.replace(/,\s*/g, ',  ');
+
+        if (state.gender === 'female') {
+          utter.pitch = isNaturalNeural ? 1.01 : 1.04;
+          utter.rate = Math.max(0.75, Math.min(1.5, state.rate * 0.96));
+        } else {
+          utter.pitch = isNativeMale ? 0.98 : 0.72;
+          utter.rate = Math.max(0.75, Math.min(1.5, state.rate * 0.94));
+        }
+
+        state.activeUtterance = utter;
+
+        utter.onend = () => {
+          clearInterval(state.heartbeatTimer);
+          if (state.playSessionId === sessionId && onDone) onDone();
+        };
+
+        utter.onerror = (e) => {
+          clearInterval(state.heartbeatTimer);
+          const errType = e?.error || '';
+          if (errType === 'interrupted' || errType === 'canceled') return;
+          if (state.playSessionId === sessionId && onDone) {
+            onDone();
+          }
+        };
+
+        window.speechSynthesis.speak(utter);
+
+        state.heartbeatTimer = setInterval(() => {
+          if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+            window.speechSynthesis.pause();
+            window.speechSynthesis.resume();
+          }
+        }, 10000);
+      }, 45);
+    }
+
+    // =========================================================================
+    // 4. Story Rendering, Category Filtering & Sentence Playback
+    // =========================================================================
+    function renderStory(index) {
+      if (index < 0 || index >= STORIES.length) return;
+      state.currentStoryIndex = index;
+      state.currentSentenceIndex = 0;
+
+      const story = STORIES[index];
+      dom.storyCategoryBadge.textContent = story.category;
+      dom.storyTitle.textContent = story.title;
+      dom.storyReference.textContent = story.reference;
+      dom.storySummary.textContent = story.summary;
+
+      state.sentences = [];
+      story.paragraphs.forEach(p => {
+        const parts = p.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [p];
+        parts.forEach(part => {
+          const trimmed = part.trim();
+          if (trimmed) state.sentences.push(trimmed);
+        });
+      });
+
+      dom.storyContent.style.fontSize = `${state.fontSize}px`;
+      dom.storyContent.innerHTML = '';
+
+      let globalSentenceIdx = 0;
+      story.paragraphs.forEach((p) => {
+        const pEl = document.createElement('p');
+        const parts = p.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [p];
+        parts.forEach(part => {
+          const trimmed = part.trim();
+          if (!trimmed) return;
+          const idx = globalSentenceIdx++;
+          const span = document.createElement('span');
+          span.className = 'sentence-span';
+          span.dataset.idx = String(idx);
+          span.textContent = trimmed + ' ';
+          span.addEventListener('click', () => {
+            state.currentSentenceIndex = idx;
+            state.isPlaying = true;
+            updatePlayButtonUI();
+            playCurrentSentence();
+          });
+          pEl.appendChild(span);
+        });
+        dom.storyContent.appendChild(pEl);
+      });
+
+      highlightActiveSentence();
+      updateProgressUI();
+      renderStoryList();
+    }
+
+    function highlightActiveSentence() {
+      const spans = dom.storyContent.querySelectorAll('.sentence-span');
+      spans.forEach((sp, i) => {
+        if (i === state.currentSentenceIndex) {
+          sp.classList.add('sentence-active');
+        } else {
+          sp.classList.remove('sentence-active');
+        }
+      });
+    }
+
+    function updateProgressUI() {
+      const total = state.sentences.length;
+      const cur = total ? Math.min(state.currentSentenceIndex + 1, total) : 0;
+      dom.progressLabel.textContent = `${cur} / ${total} 문장`;
+      const pct = total ? (cur / total) * 100 : 0;
+      dom.progressBarFill.style.width = `${pct}%`;
+    }
+
+    function updatePlayButtonUI() {
+      if (state.isPlaying) {
+        dom.playBtnIcon.textContent = '⏸️';
+        dom.playBtnLabel.textContent = '일시정지';
+        dom.playingWave.classList.remove('hidden');
+        dom.playingWave.classList.add('flex');
+      } else {
+        dom.playBtnIcon.textContent = '▶️';
+        dom.playBtnLabel.textContent = '스토리 듣기';
+        dom.playingWave.classList.add('hidden');
+        dom.playingWave.classList.remove('flex');
+      }
+    }
+
+    function playCurrentSentence() {
+      if (!state.isPlaying) return;
+      if (state.currentSentenceIndex >= state.sentences.length) {
+        if (dom.chkAutoNext.checked && state.currentStoryIndex + 1 < STORIES.length) {
+          renderStory(state.currentStoryIndex + 1);
+          playCurrentSentence();
+        } else {
+          pauseStory();
+          state.currentSentenceIndex = 0;
+          highlightActiveSentence();
+          updateProgressUI();
+        }
+        return;
+      }
+
+      highlightActiveSentence();
+      updateProgressUI();
+
+      const currentText = state.sentences[state.currentSentenceIndex];
+      speakNativeSentence(currentText, () => {
+        if (!state.isPlaying) return;
+        state.currentSentenceIndex++;
+        playCurrentSentence();
+      });
+    }
+
+    function pauseStory() {
+      state.isPlaying = false;
+      stopAllAudioEngines();
+      updatePlayButtonUI();
+    }
+
+    function populateBookCategories() {
+      const filteredBooks = BIBLE_BOOKS_CATALOG.filter(b =>
+        state.filterTestament === 'all' || b.t === state.filterTestament
+      );
+      const label = state.filterTestament === 'old'
+        ? '📖 구약 성경 39권 전체 보기'
+        : state.filterTestament === 'new'
+          ? '📖 신약 성경 27권 전체 보기'
+          : '📖 전체 성경 66권 보기';
+
+      dom.bookCategorySelect.innerHTML = `<option value="ALL">${label}</option>` +
+        filteredBooks.map(b => {
+          const tName = b.t === 'old' ? '구약' : '신약';
+          return `<option value="${b.b}">[${tName}] ${b.b} (${b.cnt}편)</option>`;
+        }).join('');
+    }
+
+    function renderStoryList() {
+      const q = state.searchQuery.trim().toLowerCase();
+      const filtered = STORIES.filter(s => {
+        if (state.filterTestament !== 'all' && s.testament !== state.filterTestament) return false;
+        if (state.filterBook !== 'ALL' && s.book !== state.filterBook) return false;
+        if (q) {
+          const hay = `${s.title} ${s.book} ${s.reference} ${s.summary}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      dom.filteredCountBadge.textContent = `${filtered.length.toLocaleString()}편`;
+
+      const displayItems = filtered.slice(0, 120);
+      dom.storyListGrid.innerHTML = displayItems.map(s => {
+        const realIdx = s.id - 1;
+        const isCurrent = realIdx === state.currentStoryIndex;
+        return `
+          <button data-story-idx="${realIdx}"
+                  class="story-list-item w-full text-left p-3.5 rounded-2xl border transition flex items-start justify-between gap-3"
+                  style="background-color: ${isCurrent ? 'var(--accent-soft)' : 'var(--bg-card)'}; border-color: ${isCurrent ? 'var(--accent)' : 'var(--border)'};">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-md"
+                      style="background-color: var(--bg-sub); color: var(--accent);">${s.category}</span>
+                <span class="text-[10px] truncate" style="color: var(--text-sub);">${s.reference}</span>
+              </div>
+              <p class="text-xs sm:text-sm font-bold truncate">${s.title}</p>
+            </div>
+            <span class="text-xs font-bold shrink-0 mt-1" style="color: var(--accent);">
+              ${isCurrent ? '🔊 선택됨' : '▶️'}
+            </span>
+          </button>
+        `;
+      }).join('');
+
+      if (filtered.length > 120) {
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'text-center text-[11px] py-2';
+        infoDiv.style.color = 'var(--text-sub)';
+        infoDiv.textContent = `상위 120편이 표시됩니다. 위 성경 권별 선택기나 검색창에서 원하는 편을 바로 찾아보세요 (총 ${filtered.length.toLocaleString()}편)`;
+        dom.storyListGrid.appendChild(infoDiv);
+      }
+
+      dom.storyListGrid.querySelectorAll('.story-list-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.storyIdx, 10);
+          const wasPlaying = state.isPlaying;
+          stopAllAudioEngines();
+          renderStory(idx);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          if (wasPlaying) {
+            state.isPlaying = true;
+            updatePlayButtonUI();
+            playCurrentSentence();
+          }
+        });
+      });
+    }
+
+    // =========================================================================
+    // 5. Sleep Timer Logic
+    // =========================================================================
+    function startSleepTimer(minutes) {
+      clearInterval(state.sleepInterval);
+      if (!minutes || minutes <= 0) {
+        state.sleepEndTime = null;
+        dom.timerBadgeText.textContent = '취침예약';
+        showToast('취침 예약 타이머가 해제되었습니다.');
+        return;
+      }
+
+      state.sleepEndTime = Date.now() + minutes * 60 * 1000;
+      updateTimerBadge();
+      showToast(`${minutes}분 뒤 자동으로 낭독이 종료됩니다.`);
+
+      state.sleepInterval = setInterval(() => {
+        const remain = state.sleepEndTime - Date.now();
+        if (remain <= 0) {
+          clearInterval(state.sleepInterval);
+          state.sleepEndTime = null;
+          dom.timerBadgeText.textContent = '취침예약';
+          pauseStory();
+          showToast('취침 예약 시간이 되어 낭독을 자동 종료했습니다.');
+        } else {
+          updateTimerBadge();
+        }
+      }, 1000);
+    }
+
+    function updateTimerBadge() {
+      if (!state.sleepEndTime) return;
+      const sec = Math.max(0, Math.ceil((state.sleepEndTime - Date.now()) / 1000));
+      const h = Math.floor(sec / 3600);
+      const m = Math.floor((sec % 3600) / 60);
+      const s = sec % 60;
+      dom.timerBadgeText.textContent = h > 0
+        ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+        : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    // =========================================================================
+    // 6. Event Listeners
+    // =========================================================================
+    dom.btnPlayPauseMain.addEventListener('click', () => {
+      if (state.isPlaying) {
+        pauseStory();
+      } else {
+        state.isPlaying = true;
+        updatePlayButtonUI();
+        playCurrentSentence();
+      }
+    });
+
+    dom.btnPrevStory.addEventListener('click', () => {
+      const prev = (state.currentStoryIndex - 1 + STORIES.length) % STORIES.length;
+      const wasPlaying = state.isPlaying;
+      stopAllAudioEngines();
+      renderStory(prev);
+      if (wasPlaying) {
+        state.isPlaying = true;
+        updatePlayButtonUI();
+        playCurrentSentence();
+      }
+    });
+
+    dom.btnNextStory.addEventListener('click', () => {
+      const next = (state.currentStoryIndex + 1) % STORIES.length;
+      const wasPlaying = state.isPlaying;
+      stopAllAudioEngines();
+      renderStory(next);
+      if (wasPlaying) {
+        state.isPlaying = true;
+        updatePlayButtonUI();
+        playCurrentSentence();
+      }
+    });
+
+    dom.btnVoiceFemale.addEventListener('click', () => {
+      state.gender = 'female';
+      updateGenderButtonsUI();
+      if (state.isPlaying) {
+        stopAllAudioEngines();
+        playCurrentSentence();
+      }
+    });
+
+    dom.btnVoiceMale.addEventListener('click', () => {
+      state.gender = 'male';
+      updateGenderButtonsUI();
+      if (state.isPlaying) {
+        stopAllAudioEngines();
+        playCurrentSentence();
+      }
+    });
+
+    if (dom.voiceSelectDropdown) {
+      dom.voiceSelectDropdown.addEventListener('change', (e) => {
+        const idx = parseInt(e.target.value, 10);
+        const chosen = state.voices[idx];
+        if (!chosen) return;
+        if (state.gender === 'female') state.selectedFemaleVoice = chosen;
+        else state.selectedMaleVoice = chosen;
+        showToast(`성우 음성이 '${chosen.name}'(으)로 변경되었습니다.`);
+        if (state.isPlaying) {
+          stopAllAudioEngines();
+          playCurrentSentence();
+        }
+      });
+    }
+
+    dom.btnSpeedCycle.addEventListener('click', () => {
+      const speeds = [0.85, 1.0, 1.15, 1.3];
+      const next = speeds[(speeds.indexOf(state.rate) + 1) % speeds.length];
+      state.rate = next;
+      dom.btnSpeedCycle.textContent = `${next.toFixed(next === 1.0 ? 1 : 2).replace(/\.00$/, '.0')}x`;
+      if (state.isPlaying) {
+        stopAllAudioEngines();
+        playCurrentSentence();
+      }
+    });
+
+    dom.btnTestVoice.addEventListener('click', () => {
+      pauseStory();
+      const sample = '안녕하세요, 말씀의 숲 성경 스토리 오디오북입니다.';
+      speakNativeSentence(sample);
+    });
+
+    dom.btnThemeCycle.addEventListener('click', () => {
+      const themes = ['light', 'sepia', 'dark'];
+      state.themeIndex = (state.themeIndex + 1) % themes.length;
+      const t = themes[state.themeIndex];
+      if (t === 'light') document.documentElement.removeAttribute('data-theme');
+      else document.documentElement.setAttribute('data-theme', t);
+    });
+
+    dom.btnFontSmaller.addEventListener('click', () => {
+      state.fontSize = Math.max(13.5, state.fontSize - 1);
+      dom.storyContent.style.fontSize = `${state.fontSize}px`;
+    });
+
+    dom.btnFontLarger.addEventListener('click', () => {
+      state.fontSize = Math.min(24, state.fontSize + 1);
+      dom.storyContent.style.fontSize = `${state.fontSize}px`;
+    });
+
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t => {
+          t.style.backgroundColor = 'transparent';
+          t.style.color = 'var(--text-main)';
+        });
+        tab.style.backgroundColor = 'var(--accent)';
+        tab.style.color = '#ffffff';
+        state.filterTestament = tab.dataset.filter;
+        state.filterBook = 'ALL';
+        populateBookCategories();
+        renderStoryList();
+      });
+    });
+
+    dom.bookCategorySelect.addEventListener('change', (e) => {
+      state.filterBook = e.target.value;
+      renderStoryList();
+    });
+
+    dom.storySearchInput.addEventListener('input', (e) => {
+      state.searchQuery = e.target.value;
+      renderStoryList();
+    });
+
+    dom.btnOpenTimer.addEventListener('click', () => {
+      dom.sleepModal.classList.remove('hidden');
+      dom.sleepModal.classList.add('flex');
+    });
+
+    dom.btnCloseSleepModal.addEventListener('click', () => {
+      dom.sleepModal.classList.add('hidden');
+      dom.sleepModal.classList.remove('flex');
+    });
+
+    document.querySelectorAll('.preset-timer').forEach(btn => {
+      btn.addEventListener('click', () => {
+        startSleepTimer(parseInt(btn.dataset.mins, 10));
+        dom.sleepModal.classList.add('hidden');
+        dom.sleepModal.classList.remove('flex');
+      });
+    });
+
+    dom.btnCancelTimer.addEventListener('click', () => {
+      startSleepTimer(0);
+      dom.sleepModal.classList.add('hidden');
+      dom.sleepModal.classList.remove('flex');
+    });
+
+    dom.btnApplyCustomTimer.addEventListener('click', () => {
+      const h = parseInt(dom.customHoursInput.value, 10) || 0;
+      const m = parseInt(dom.customMinsInput.value, 10) || 0;
+      startSleepTimer(h * 60 + m);
+      dom.sleepModal.classList.add('hidden');
+      dom.sleepModal.classList.remove('flex');
+    });
+
+    dom.btnOpenInstall.addEventListener('click', () => {
+      dom.installModal.classList.remove('hidden');
+      dom.installModal.classList.add('flex');
+    });
+    dom.btnCloseInstallModal.addEventListener('click', () => {
+      dom.installModal.classList.add('hidden');
+      dom.installModal.classList.remove('flex');
+    });
+    dom.btnConfirmInstallModal.addEventListener('click', () => {
+      dom.installModal.classList.add('hidden');
+      dom.installModal.classList.remove('flex');
+    });
+
+    // Initialize App
+    const firstTab = document.querySelector('.filter-tab[data-filter="all"]');
+    if (firstTab) {
+      firstTab.style.backgroundColor = 'var(--accent)';
+      firstTab.style.color = '#ffffff';
+    }
+    updateGenderButtonsUI();
+    populateBookCategories();
+    renderStory(0);
+  </script>
+</body>
+</html>
