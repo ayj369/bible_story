@@ -1,0 +1,15 @@
+{
+  "name": "bible-forest-ios",
+  "version": "1.0.0",
+  "description": "말씀의 숲 - 초신자를 위한 1,200편 장편 성경 오디오북 (iOS)",
+  "scripts": {
+    "cap:sync": "npx cap sync ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^6.1.2",
+    "@capacitor/ios": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}

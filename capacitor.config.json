@@ -1,0 +1,11 @@
+{
+  "appId": "com.bibleforest.audiobook",
+  "appName": "말씀의숲",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "ios": {
+    "contentInset": "always"
+  }
+}
